@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-// Mongoose reports the connection as a number. This turns it into a word.
 const dbStates = ["disconnected", "connected", "connecting", "disconnecting"];
 
 // Handles GET /api/health

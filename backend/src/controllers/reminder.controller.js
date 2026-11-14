@@ -2,8 +2,6 @@ const Reminder = require("../models/Reminder");
 const { PRIORITIES } = require("../models/Reminder");
 const ApiError = require("../utils/ApiError");
 
-// Only these fields can be set by the client. This blocks sneaky fields
-// like "user" or "isCompleted" from being sent in create/update requests.
 const ALLOWED_FIELDS = ["title", "description", "dueDate", "priority"];
 
 const pickFields = (body = {}) => {
@@ -14,7 +12,6 @@ const pickFields = (body = {}) => {
   return data;
 };
 
-// Checks the type and format of each field that was sent.
 const validateFields = (data) => {
   if (data.title !== undefined && (typeof data.title !== "string" || !data.title.trim())) {
     throw new ApiError(400, "Title must be a non-empty text");

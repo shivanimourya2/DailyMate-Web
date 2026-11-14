@@ -1,8 +1,10 @@
+const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const ApiError = require("../utils/ApiError");
 const generateToken = require("../utils/generateToken");
 
-// Only these fields are ever sent back. The password never is.
+const DUMMY_HASH = bcrypt.hashSync("dummy-password", 10);
+
 const userResponse = (user) => ({
   id: user._id,
   name: user.name,
@@ -10,11 +12,9 @@ const userResponse = (user) => ({
   createdAt: user.createdAt,
 });
 
-// Makes sure every value is a non-empty string (blocks odd inputs like objects).
 const allStrings = (...values) =>
   values.every((v) => typeof v === "string" && v.trim() !== "");
 
-// POST /api/auth/register
 const register = async (req, res) => {
   const { name, email, password } = req.body || {};
 
@@ -37,7 +37,6 @@ const register = async (req, res) => {
   });
 };
 
-// POST /api/auth/login
 const login = async (req, res) => {
   const { email, password } = req.body || {};
 
@@ -45,11 +44,13 @@ const login = async (req, res) => {
     throw new ApiError(400, "Email and password are required");
   }
 
-  // select("+password") because the password is hidden by default
   const user = await User.findOne({ email: email.toLowerCase().trim() }).select("+password");
 
-  // Same message for both cases so attackers can't tell which one was wrong.
-  if (!user || !(await user.comparePassword(password))) {
+  if (!user) {
+    await bcrypt.compare(password, DUMMY_HASH);
+    throw new ApiError(401, "Invalid email or password");
+  }
+  if (!(await user.comparePassword(password))) {
     throw new ApiError(401, "Invalid email or password");
   }
 
