@@ -3,8 +3,6 @@ const env = require("../config/env");
 const User = require("../models/User");
 const ApiError = require("../utils/ApiError");
 
-// Put this before any route that needs a logged-in user.
-// The client sends:  Authorization: Bearer <token>
 const protect = async (req, res, next) => {
   const header = req.headers.authorization;
 
@@ -16,12 +14,12 @@ const protect = async (req, res, next) => {
 
   let decoded;
   try {
-    decoded = jwt.verify(token, env.jwtSecret);
+    decoded = jwt.verify(token, env.jwtSecret, { algorithms: ["HS256"] });
   } catch (error) {
     throw new ApiError(401, "Not authorized, token invalid or expired");
   }
 
-  const user = await User.findById(decoded.id);
+  const user = typeof decoded.id === "string" ? await User.findById(decoded.id) : null;
   if (!user) {
     throw new ApiError(401, "Not authorized, user no longer exists");
   }
