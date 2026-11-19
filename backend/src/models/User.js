@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters"],
+      maxlength: [72, "Password cannot be longer than 72 characters"], // bcrypt only uses 72
       select: false, // never included in query results unless asked for
     },
   },
